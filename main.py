@@ -51,6 +51,10 @@ def main():
         {
             'path': os.path.join(examples_dir, 'biomass_growth_death_model.py'),
             'name': 'Growth-Death Model'
+        },
+        {
+            'path': os.path.join(examples_dir, 'dual_substrate_growth_model.py'),
+            'name': 'Dual Substrate Growth Model'
         }
     ]
     

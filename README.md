@@ -4,7 +4,7 @@ This project demonstrates how to fit bioprocess models to time-series data of bi
 
 ## Overview
 
-The implementation includes two examples, each with three core components:
+The implementation includes three core examples, each with three core components:
 
 ### 1. Monod Growth Model
 
@@ -34,6 +34,21 @@ A more sophisticated model that accounts for cell death, showing biomass decline
 - **Simulation Function**: Solves the extended ODE system including the death kinetics.
 
 - **Optimization Function**: Fits three parameters ($\mu_{max}$, $K_s$, and $k_d$) to experimental data showing growth and decline phases.
+
+### 3. Dual Substrate Growth Model
+
+A model that simulates growth on two competing substrates with different affinities, demonstrating diauxic growth patterns:
+
+- **Model Function**: Models growth on two substrates simultaneously:
+  - $\frac{dX}{dt} = \mu_1 \cdot X + \mu_2 \cdot X$
+  - Where $\mu_1 = \mu_{max1} \cdot \frac{S_1}{K_{s1} + S_1}$ (growth on high-affinity substrate)
+  - Where $\mu_2 = \mu_{max2} \cdot \frac{S_2}{K_{s2} + S_2}$ (growth on low-affinity substrate)
+  - $\frac{dS_1}{dt} = -\mu_1 \cdot X$ (consumption of substrate 1)
+  - $\frac{dS_2}{dt} = -\mu_2 \cdot X$ (consumption of substrate 2)
+
+- **Simulation Function**: Solves the ODE system for both substrates simultaneously.
+
+- **Optimization Function**: Fits four parameters ($\mu_{max1}$, $K_{s1}$, $\mu_{max2}$, and $K_{s2}$) to experimental data showing preferential substrate utilization.
 
 ## Model Fitting Concept
 
@@ -78,6 +93,7 @@ flowchart LR
 1. **Model Function**: Defines the ordinary differential equations (ODEs) that describe the biological system:
    - Monod growth model: $\frac{dX}{dt} = \mu_{max} \cdot \frac{S}{K_s + S} \cdot X$
    - Growth-death model: $\frac{dX}{dt} = \mu_{max} \cdot \frac{S}{K_s + S} \cdot X - k_d \cdot X$
+   - Dual substrate model: $\frac{dX}{dt} = \mu_{max1} \cdot \frac{S_1}{K_{s1} + S_1} \cdot X + \mu_{max2} \cdot \frac{S_2}{K_{s2} + S_2} \cdot X$
 
 2. **Simulation Function**: Numerically solves the ODE system using `scipy.integrate.solve_ivp` with the current parameter estimates and initial conditions.
 
@@ -102,16 +118,24 @@ The simple Monod growth model shows biomass accumulation as substrate is consume
 
 The growth-death model demonstrates a more complex behavior where biomass initially grows but then declines after substrate depletion, due to the death rate constant ($k_d$). The net specific growth rate plot shows when growth transitions to decline.
 
+### Dual Substrate Growth Model
+
+![Dual Substrate Growth Model Results](figures/dual_substrate_growth_fit.png)
+
+The dual substrate growth model illustrates how microorganisms preferentially consume a high-affinity substrate (like glucose) before switching to a lower-affinity substrate. This creates a characteristic diauxic growth pattern with distinct growth phases corresponding to each substrate.
+
 ## Directory Structure
 
 ```
 modelfit-examples/
 ├── examples/
 │   ├── biomass_growth_model.py         # Simple Monod growth model
-│   └── biomass_growth_death_model.py   # Growth model with death phase
+│   ├── biomass_growth_death_model.py   # Growth model with death phase
+│   └── dual_substrate_growth_model.py  # Growth model with two competing substrates
 ├── figures/
 │   ├── monod_growth_fit.png            # Output from simple model
-│   └── growth_death_model_fit.png      # Output from death phase model
+│   ├── growth_death_model_fit.png      # Output from death phase model
+│   └── dual_substrate_growth_fit.png   # Output from dual substrate model
 ├── main.py                             # Runner for all examples
 ├── README.md
 └── pyproject.toml
@@ -160,6 +184,9 @@ uv run examples/biomass_growth_model.py
 
 # Growth model with death phase
 uv run examples/biomass_growth_death_model.py
+
+# Dual substrate growth model
+uv run examples/dual_substrate_growth_model.py
 ```
 
 If you prefer using Python directly:
@@ -170,6 +197,9 @@ python examples/biomass_growth_model.py
 
 # Growth model with death phase
 python examples/biomass_growth_death_model.py
+
+# Dual substrate growth model
+python examples/dual_substrate_growth_model.py
 ```
 
 Each script will:
@@ -192,6 +222,12 @@ Each script will:
 - The normalized root mean square error (NRMSE) of the fit
 - A plot showing biomass growth, decline, substrate consumption, and net growth rate
 
+### Dual Substrate Growth Model
+- The true parameters used to generate the synthetic data ($\mu_{max1}$, $K_{s1}$, $\mu_{max2}$, and $K_{s2}$)
+- The fitted parameters ($\mu_{max1}$, $K_{s1}$, $\mu_{max2}$, and $K_{s2}$)
+- The normalized root mean square error (NRMSE) of the fit
+- A plot showing biomass growth, consumption of both substrates, and specific growth rates on each substrate
+
 ## Model Equations
 
 ### Monod Growth Model
@@ -209,3 +245,13 @@ $$\frac{dS}{dt} = -\mu \cdot X$$  (substrate consumed only for growth, not durin
 
 Where:
 $$\mu = \mu_{max} \cdot \frac{S}{K_s + S}$$
+
+### Dual Substrate Growth Model
+
+$$\frac{dX}{dt} = \mu_1 \cdot X + \mu_2 \cdot X$$
+$$\frac{dS_1}{dt} = -\mu_1 \cdot X$$
+$$\frac{dS_2}{dt} = -\mu_2 \cdot X$$
+
+Where:
+$$\mu_1 = \mu_{max1} \cdot \frac{S_1}{K_{s1} + S_1}$$
+$$\mu_2 = \mu_{max2} \cdot \frac{S_2}{K_{s2} + S_2}$$

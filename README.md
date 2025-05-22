@@ -35,6 +35,53 @@ A more sophisticated model that accounts for cell death, showing biomass decline
 
 - **Optimization Function**: Fits three parameters ($\mu_{max}$, $K_s$, and $k_d$) to experimental data showing growth and decline phases.
 
+## Model Fitting Concept
+
+The model fitting process follows an iterative optimization approach to find the best parameters that describe the experimental data:
+
+```mermaid
+flowchart TD
+    A[Experimental Data] --> B[Initial Parameter Guess]
+    B --> C[Simulate Model]
+    C --> D[Calculate Error]
+    D --> E{Error Acceptable?}
+    E -->|No| F[Update Parameters]
+    F --> C
+    E -->|Yes| G[Final Parameters]
+    
+    H[Cost Function] --> D
+    I[ODE Model] --> C
+    J[Optimization Algorithm] --> F
+    
+    classDef data fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    classDef process fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+    classDef decision fill:#f8bbd0,stroke:#c2185b,stroke-width:2px
+    classDef model fill:#d1c4e9,stroke:#512da8,stroke-width:2px
+    
+    class A,G data
+    class B,C,D,F process
+    class E decision
+    class H,I,J model
+```
+
+### Key Components
+
+1. **Experimental Data**: Time-series measurements of biomass concentration and substrate levels.
+
+2. **ODE Model**: Mathematical representation of the biological system:
+   - Simple Monod model: $\frac{dX}{dt} = \mu_{max} \cdot \frac{S}{K_s + S} \cdot X$
+   - Growth-death model: $\frac{dX}{dt} = \mu_{max} \cdot \frac{S}{K_s + S} \cdot X - k_d \cdot X$
+
+3. **Simulation**: Numerical solution of the ODE system using initial conditions and current parameter estimates.
+
+4. **Cost Function**: Quantifies the difference between model predictions and experimental data:
+   - Sum of Squared Errors (SSE): $\sum_{i=1}^{n} (y_{pred,i} - y_{exp,i})^2$
+   - Normalized Root Mean Square Error (NRMSE): $\frac{\sqrt{\frac{1}{n}\sum_{i=1}^{n} (y_{pred,i} - y_{exp,i})^2}}{y_{max} - y_{min}}$
+
+5. **Optimization Algorithm**: Updates parameter values to minimize the cost function (e.g., L-BFGS-B algorithm).
+
+6. **Convergence**: The process continues until the error reaches an acceptable level or the algorithm converges.
+
 ## Results
 
 ### Monod Growth Model
@@ -59,6 +106,7 @@ modelfit-examples/
 ├── figures/
 │   ├── monod_growth_fit.png            # Output from simple model
 │   └── growth_death_model_fit.png      # Output from death phase model
+├── main.py                             # Runner for all examples
 ├── README.md
 └── pyproject.toml
 ```
@@ -85,7 +133,20 @@ uv sync
 
 ### Running Examples
 
-Run either of the examples using `uv run`:
+#### Run All Examples at Once
+
+The simplest way to run all examples is to use the main.py file:
+
+```bash
+# Run all examples sequentially
+uv run main.py
+```
+
+This will execute all examples one after another and save their output plots to the `figures/` directory.
+
+#### Run Individual Examples
+
+Alternatively, you can run each example individually:
 
 ```bash
 # Simple Monod growth model
@@ -95,7 +156,7 @@ uv run examples/biomass_growth_model.py
 uv run examples/biomass_growth_death_model.py
 ```
 
-Alternatively, if you prefer using Python directly:
+If you prefer using Python directly:
 
 ```bash
 # Simple Monod growth model

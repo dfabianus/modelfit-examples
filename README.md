@@ -11,29 +11,29 @@ The implementation includes two examples, each with three core components:
 The basic model describes biomass growth following Monod kinetics:
 
 - **Model Function**: Defines the ordinary differential equation (ODE) for biomass growth:
-  - dX/dt = μ * X
-  - Where μ = μ_max * S / (k + S) (Monod equation)
-  - X = biomass concentration
-  - S = substrate concentration
-  - μ_max = maximum specific growth rate
-  - k = half-saturation constant
+  - $\frac{dX}{dt} = \mu \cdot X$
+  - Where $\mu = \mu_{max} \cdot \frac{S}{K_s + S}$ (Monod equation)
+  - $X$ = biomass concentration
+  - $S$ = substrate concentration
+  - $\mu_{max}$ = maximum specific growth rate
+  - $K_s$ = half-saturation constant
 
 - **Simulation Function**: Uses `scipy.integrate.solve_ivp` to solve the ODE system over a specified time span.
 
-- **Optimization Function**: Minimizes the cost function (sum of squared errors) by fitting the model parameters (μ_max and k) to experimental data.
+- **Optimization Function**: Minimizes the cost function (sum of squared errors) by fitting the model parameters ($\mu_{max}$ and $K_s$) to experimental data.
 
 ### 2. Growth-Death Model
 
 A more sophisticated model that accounts for cell death, showing biomass decline after peak growth:
 
 - **Model Function**: Extends the basic model with a death term:
-  - dX/dt = μ * X - kd * X
-  - Where μ = μ_max * S / (k + S)
-  - kd = death rate constant
+  - $\frac{dX}{dt} = \mu \cdot X - k_d \cdot X$
+  - Where $\mu = \mu_{max} \cdot \frac{S}{K_s + S}$
+  - $k_d$ = death rate constant
 
 - **Simulation Function**: Solves the extended ODE system including the death kinetics.
 
-- **Optimization Function**: Fits three parameters (μ_max, k, and kd) to experimental data showing growth and decline phases.
+- **Optimization Function**: Fits three parameters ($\mu_{max}$, $K_s$, and $k_d$) to experimental data showing growth and decline phases.
 
 ## Results
 
@@ -47,7 +47,7 @@ The simple Monod growth model shows biomass accumulation as substrate is consume
 
 ![Growth-Death Model Results](figures/growth_death_model_fit.png)
 
-The growth-death model demonstrates a more complex behavior where biomass initially grows but then declines after substrate depletion, due to the death rate constant (kd). The net specific growth rate plot shows when growth transitions to decline.
+The growth-death model demonstrates a more complex behavior where biomass initially grows but then declines after substrate depletion, due to the death rate constant ($k_d$). The net specific growth rate plot shows when growth transitions to decline.
 
 ## Directory Structure
 
@@ -114,31 +114,31 @@ Each script will:
 ## Output
 
 ### Monod Growth Model
-- The true parameters used to generate the synthetic data (μ_max and k)
-- The fitted parameters (μ_max and k)
+- The true parameters used to generate the synthetic data ($\mu_{max}$ and $K_s$)
+- The fitted parameters ($\mu_{max}$ and $K_s$)
 - The normalized root mean square error (NRMSE) of the fit
 - A plot showing biomass growth and substrate consumption
 
 ### Growth-Death Model
-- The true parameters used to generate the synthetic data (μ_max, k, and kd)
-- The fitted parameters (μ_max, k, and kd)
+- The true parameters used to generate the synthetic data ($\mu_{max}$, $K_s$, and $k_d$)
+- The fitted parameters ($\mu_{max}$, $K_s$, and $k_d$)
 - The normalized root mean square error (NRMSE) of the fit
 - A plot showing biomass growth, decline, substrate consumption, and net growth rate
 
 ## Model Equations
 
 ### Monod Growth Model
-```
-dX/dt = μ * X
-dS/dt = -dX/dt  (assuming yield coefficient = 1 for simplicity)
 
-Where μ = μ_max * S / (k + S)
-```
+$$\frac{dX}{dt} = \mu \cdot X$$
+$$\frac{dS}{dt} = -\frac{dX}{dt}$$  (assuming yield coefficient = 1 for simplicity)
+
+Where:
+$$\mu = \mu_{max} \cdot \frac{S}{K_s + S}$$
 
 ### Growth-Death Model
-```
-dX/dt = μ * X - kd * X
-dS/dt = -μ * X  (substrate consumed only for growth, not during death)
 
-Where μ = μ_max * S / (k + S)
-```
+$$\frac{dX}{dt} = \mu \cdot X - k_d \cdot X$$
+$$\frac{dS}{dt} = -\mu \cdot X$$  (substrate consumed only for growth, not during death)
+
+Where:
+$$\mu = \mu_{max} \cdot \frac{S}{K_s + S}$$

@@ -37,50 +37,56 @@ A more sophisticated model that accounts for cell death, showing biomass decline
 
 ## Model Fitting Concept
 
-The model fitting process follows an iterative optimization approach to find the best parameters that describe the experimental data:
+The model fitting process revolves around three core functional components that work together to fit mathematical models to experimental data:
 
 ```mermaid
-flowchart TD
-    A[Experimental Data] --> B[Initial Parameter Guess]
-    B --> C[Simulate Model]
-    C --> D[Calculate Error]
-    D --> E{Error Acceptable?}
-    E -->|No| F[Update Parameters]
-    F --> C
-    E -->|Yes| G[Final Parameters]
+flowchart LR
+    Data[Experimental Data] --> Sim
     
-    H[Cost Function] --> D
-    I[ODE Model] --> C
-    J[Optimization Algorithm] --> F
+    subgraph Model["1. Model Function"]
+        ODE["ODE System Definition<br/>dX/dt = μ·X - kd·X<br/>dS/dt = -μ·X"]
+    end
     
-    classDef data fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
-    classDef process fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-    classDef decision fill:#f8bbd0,stroke:#c2185b,stroke-width:2px
-    classDef model fill:#d1c4e9,stroke:#512da8,stroke-width:2px
+    subgraph Sim["2. Simulation Function"]
+        Solve["Solve ODE System<br/>using solve_ivp"]
+    end
     
-    class A,G data
-    class B,C,D,F process
-    class E decision
-    class H,I,J model
+    subgraph Opt["3. Optimization Function"]
+        Cost["Calculate Cost<br/>SSE/NRMSE"]
+        Update["Update Parameters<br/>μ_max, Ks, kd"]
+        Cost --> Update
+        Update --> |New Parameters| Sim
+    end
+    
+    Model --> Sim
+    Sim --> |Predicted Values| Opt
+    Opt --> |Final Parameters| Results[Fitted Model]
+    
+    classDef modelBlock fill:#d1c4e9,stroke:#512da8,stroke-width:2px
+    classDef simBlock fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    classDef optBlock fill:#ffecb3,stroke:#ff8f00,stroke-width:2px
+    classDef dataBlock fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    
+    class Model modelBlock
+    class Sim simBlock
+    class Opt optBlock
+    class Data,Results dataBlock
 ```
 
 ### Key Components
 
-1. **Experimental Data**: Time-series measurements of biomass concentration and substrate levels.
-
-2. **ODE Model**: Mathematical representation of the biological system:
-   - Simple Monod model: $\frac{dX}{dt} = \mu_{max} \cdot \frac{S}{K_s + S} \cdot X$
+1. **Model Function**: Defines the ordinary differential equations (ODEs) that describe the biological system:
+   - Monod growth model: $\frac{dX}{dt} = \mu_{max} \cdot \frac{S}{K_s + S} \cdot X$
    - Growth-death model: $\frac{dX}{dt} = \mu_{max} \cdot \frac{S}{K_s + S} \cdot X - k_d \cdot X$
 
-3. **Simulation**: Numerical solution of the ODE system using initial conditions and current parameter estimates.
+2. **Simulation Function**: Numerically solves the ODE system using `scipy.integrate.solve_ivp` with the current parameter estimates and initial conditions.
 
-4. **Cost Function**: Quantifies the difference between model predictions and experimental data:
-   - Sum of Squared Errors (SSE): $\sum_{i=1}^{n} (y_{pred,i} - y_{exp,i})^2$
-   - Normalized Root Mean Square Error (NRMSE): $\frac{\sqrt{\frac{1}{n}\sum_{i=1}^{n} (y_{pred,i} - y_{exp,i})^2}}{y_{max} - y_{min}}$
+3. **Optimization Function**: Iteratively improves parameter values to minimize the difference between model predictions and experimental data:
+   - Calculates error metrics (SSE, NRMSE)
+   - Updates parameters using optimization algorithms (L-BFGS-B)
+   - Determines when convergence is reached
 
-5. **Optimization Algorithm**: Updates parameter values to minimize the cost function (e.g., L-BFGS-B algorithm).
-
-6. **Convergence**: The process continues until the error reaches an acceptable level or the algorithm converges.
+The process iterates until optimal parameter values are found that best describe the experimental data.
 
 ## Results
 
